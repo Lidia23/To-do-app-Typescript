@@ -1,10 +1,4 @@
-class Todo {
-    id: string;
+export interface Todo {
+    id?: number;
     text: string;
-    
-    constructor(todoText: string){
-        this.text = todoText;
-        this.id = new Date().toISOString();
-    }
 }
-export default Todo;

@@ -1,34 +1,55 @@
-import React from "react";
-import Todo from "../models/todo";
+import React, { useEffect } from "react";
+import {Todo} from "../models/todo";
 import { useState } from 'react';
+import { TaskService } from "../services/task.service";
 
 
 type TodosCntxObject = {
     items: Todo[];
     addTodo: (text: string) => void;
-    deleteTodo: (id: string) => void;
+    deleteTodo: (id: number) => void;
 };
 
 export const TodoContext = React.createContext<TodosCntxObject>({
     items: [],
     addTodo: () => { },
-    deleteTodo: (id: string) => { }
+    deleteTodo: (id: number) => { }
 });
 
 const TodosContextProvider: React.FC = (props) => {
+    const taskService: TaskService = new TaskService();
     const [todos, setTodos] = useState<Todo[]>([]);
 
-    const addTodoHandler = (text: string) => {
-        const newTodo = new Todo(text);
-        setTodos((prevTodos) => {
-            return prevTodos.concat(newTodo);
-        });
+    useEffect(() => {
+        fetchTodos();
+    }, []);
+    const fetchTodos = async () => {
+        try {
+            const res = await taskService.getTasks();
+            if (!res) throw new Error('Failed to fetch todos');
+            setTodos(res);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const addTodoHandler = async (text: string) => {
+        const request: Todo = {text: text}
+        try {
+            await taskService.createTask(request)
+        } catch (error) {
+            console.log(error)
+        }
+        fetchTodos();
     }
 
-    const deleteHandler = (id: string) => {
-        setTodos((prevTodos) => {
-            return prevTodos.filter(todo => todo.id !== id); //filter create a new array excluding the item with matching id
-        })
+    const deleteHandler = async (id: number) => {
+        try{
+            await taskService.deleteTask(id)
+        }catch(error){
+            console.error(error)
+        }
+        fetchTodos()
     }
     const contexValue: TodosCntxObject = {
         items: todos,

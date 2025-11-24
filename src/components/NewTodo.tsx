@@ -16,6 +16,9 @@ const NewTodo: React.FC = () => {
         }
 
         newTodoCtx.addTodo(enteredText);
+        if (todoTextInputRef.current) {
+            todoTextInputRef.current.value = '';
+        }
     }
     return (
         <form onSubmit={submitHandler} className={classes.form}>
